@@ -21,7 +21,7 @@ class LineSegment:
 
 class Cezanne:
 	def __init__(self,nSegments, nAnts, tau0,alpha,beta):
-		start = time.perf_counter()
+		start = time.perf_counter()*1000
 		self.tau0 = tau0
 		self.alpha = alpha
 		self.beta = beta
@@ -49,7 +49,7 @@ class Cezanne:
 			self.trails[i].id = i
 		
 		self.ants = [Ant(i,self) for i in range(nAnts)] 
-		end = time.perf_counter()
+		end = time.perf_counter()*1000
 		print(f"Setup took {end-start}s.")
 
 		start = time.monotonic()
@@ -58,7 +58,7 @@ class Cezanne:
 				nextTrail = ant.selectNextVertex()
 				ant.followTrail(nextTrail)
 
-		end = time.perf_counter()
+		end = time.perf_counter()*1000
 		print(f'Pathfinding took { end-start }s.')
 
 class Trail:
@@ -95,16 +95,24 @@ class Ant:
 
 	
 	def selectNextVertex(self):
+		start = time.perf_counter()*1000
 		currentVertex = self.route[-1]
 		availableTrails = [currentVertex.trails[trailID] for trailID in self.unvisited]
 		numerators = [pow(currentVertex.trails[trailID].tau,self.cezanne.alpha)*currentVertex.trails[trailID].desirability for trailID in self.unvisited]
 		denominator = np.sum(numerators)
+		end = time.perf_counter()*1000
+		start = time.perf_counter()*1000
 		probabilities = [numerator/denominator for numerator in numerators]
+		end = time.perf_counter()*1000
+		start = time.perf_counter()*1000
 		trail = np.random.choice(availableTrails, p=probabilities)
+		end = time.perf_counter()*1000
+		print(f'C: { end-start }')
 		return trail
 	
 	def followTrail(self,trail):
 		# Todo: should this protect against selecting a bad trail, i.e. one that does not connect to last location?
+		start = time.perf_counter()*1000
 		nextVertex = trail.vertices[0] if self.route[-1] is trail.vertices[1] else trail.vertices[1]
 		self.route.append(nextVertex)
 		self.unvisited.remove(self.route[-1].id)
@@ -115,8 +123,9 @@ class Ant:
 		# Automatically Advance the route to the next location
 		self.route.append(self.route[-1].partner)
 		self.unvisited.remove(self.route[-1].id)
+		end = time.perf_counter()*1000
 
 
 
 if __name__ == '__main__':
-	cezanne = Cezanne(nSegments=100, nAnts=100, tau0=1, alpha=1, beta=2)
+	cezanne = Cezanne(nSegments=200, nAnts=50, tau0=1, alpha=1, beta=2)
