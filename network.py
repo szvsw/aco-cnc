@@ -3,7 +3,7 @@ import random
 import time
 import logging
 from annealer import Annealer
-from acs import AntColonySystem
+from antcolonysystem import AntColonySystem
 from linesegment import LineSegment
 from trail import Trail
 
