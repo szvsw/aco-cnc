@@ -2,7 +2,7 @@ import random
 import time
 import logging
 
-class AntColonySolver():
+class AntColonySystem():
 	def __init__(self,network,alpha,beta,tau0,nAnts,ro,phi,maxIterations):
 		self.name = 'acs'
 		self.network = network
@@ -21,8 +21,6 @@ class AntColonySolver():
 		self.bestAnt = None
 		self.energyHistory = []
 
-		# self.createAntPopulation()
-
 	def createAntPopulation(self, reuseStarts=True):
 		self.ants = [Ant(id=i, network=self.network, solver=self, reuseStarts=reuseStarts) for i in range(self.nAnts)] 
 		if self.bestAnt == None:
@@ -33,8 +31,8 @@ class AntColonySolver():
 		for i in range(len(self.network.segments)-1):
 			for ant in self.ants:
 				ant.advance()
-			# for ant in self.ants:
-			# 	ant.depositLastTrail() # deposit pheromone on last used trail
+			for ant in self.ants:
+				ant.depositLastTrail() # deposit pheromone on last used trail
 
 		end = time.perf_counter()*1000
 		logging.info(f'Pathfinding took { end-start }ms.')
@@ -82,7 +80,7 @@ class AntColonySolver():
 			logging.info("")
 		end = time.perf_counter()
 		logging.info(f"{self.iterations} iterations took {end-start}s.")
-		self.acsTime = end-start
+		self.solutionTime = end-start
 		return self.energyHistory[-1]
 
 class Ant:
@@ -158,7 +156,7 @@ class Ant:
 		nextTrail = self.selectNextTrail()
 		self.followTrail(nextTrail)
 	
-	def depositLastTrails(self):
+	def depositLastTrail(self):
 		# Deposite Pheromones
 		self.trails[-1].depositPheromone(local=True) # Use local updating which uses tau0 for amount and phi for evap. rate
 	

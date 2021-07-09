@@ -3,7 +3,7 @@ import random
 import time
 import logging
 from annealer import Annealer
-from acs import Ant, AntColonySolver
+from acs import AntColonySystem
 from linesegment import LineSegment
 from trail import Trail
 
@@ -120,11 +120,11 @@ if __name__ == '__main__':
 	# tau0 = 1/(nSegments * nearestNeighbor energy approximation)
 	network = Network(nSegments=100)
 	# network.solve(mode='anneal')
-	acs = AntColonySolver(network=network, nAnts=20, tau0=1, alpha=1, beta=10, phi=0.01, ro=0.01, maxIterations= 500)
+	acs = AntColonySystem(network=network, nAnts=20, tau0=1, alpha=1, beta=10, phi=0.01, ro=0.01, maxIterations= 500)
 	acs.solve()
-	# print(network.solve(mode='nn'))
-	# print(f"e_acs / e_nn = {network.bestAnt.energy/network.nnSolution['energy']}")
-	# print(f"t_acs / t_nn = {network.acsTime/network.nnSolution['time']}")
+	print(network.solve(mode='nn'))
+	print(f"e_acs / e_nn = {acs.bestAnt.energy/network.nnSolution['energy']}")
+	print(f"t_acs / t_nn = {acs.solutionTime/network.nnSolution['time']}")
 	exit()
 
 	with open("./visualize/data/segments.csv", mode='w', newline="") as csv_file:
