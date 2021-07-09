@@ -37,17 +37,20 @@ class Tour:
 		return segments
 	
 	
-	def reverseSection(self):
+	def reverseSection(self,noWrap=True):
 		segments = [segment for segment in self.segments]
 		startIndex = int(random.random()*len(segments))
-		lengthToReverse = int(random.random()*(len(segments)-1))+1
+		lengthToReverse = int(random.random()*(len(segments)-startIndex-1))+1 if noWrap else int(random.random()*(len(segments)-1))+1
 		elementsToReverse = [segments[(startIndex +i)%len(segments)] for i in range(lengthToReverse)]
 		elementsToReverse.reverse()
+
+
 		for element in elementsToReverse:
-			element.polarity = 1-element.polarity
+			element.polarity = 1 - element.polarity
 	
 		for i in range(lengthToReverse):
 			segments[(startIndex+i)%len(segments)] = elementsToReverse[i]
+
 		return segments
 
 	def moveSegment(self):
@@ -72,6 +75,7 @@ class Tour:
 		segments[index].polarity = 1-segments[index].polarity
 		return segments
 	
-	def findNeighborSegments(self):
-		action = random.choice([self.invertSegment,self.swapSegments, self.moveSegment, self.reverseSection, self.cutAndPasteSection])
+	def findNeighborSegments(self,all=False):
+		actions = [self.invertSegment,self.swapSegments, self.moveSegment, self.reverseSection, self.cutAndPasteSection] if all else [self.reverseSection]
+		action = random.choice(actions)
 		return action()

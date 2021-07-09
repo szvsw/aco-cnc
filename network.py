@@ -1,7 +1,9 @@
 # import numpy as np
+from math import sqrt
 import random
 import time
 import logging
+from greedy import Greedy
 from annealer import Annealer
 from antcolonysystem import AntColonySystem
 from linesegment import LineSegment
@@ -12,6 +14,7 @@ from trail import Trail
 
 class Network:
 	def __init__(self,nSegments):
+		logging.info(f"Setting up network with {nSegments} pairs of connected points.")
 		start = time.perf_counter()*1000
 
 		self.segments = [LineSegment() for i in range(nSegments)]
@@ -46,71 +49,6 @@ class Network:
 		end = time.perf_counter()*1000
 		logging.info(f"Graph setup took {end-start}ms.")
 	
-	def solve(self, mode='acs'):
-		if mode == 'anneal':
-			start = time.perf_counter()*1000
-			self.solve(mode='nn')
-			seedSegments = [self.nnSolution['vertexHistory'][i*2].parentSegment for i in range(len(self.nnSolution['trailHistory']))]
-			for i in range(len(self.nnSolution['trailHistory'])):
-				seedSegments[i].polarity = 0 if self.nnSolution['vertexHistory'][i*2].id == seedSegments[i].vertices[0].id else 1
-			self.annealer = Annealer(self,seedSegments=seedSegments, maxAttempts=200000,maxIterations=400000, initialTemp=500)
-			self.annealer.anneal()
-			end = time.perf_counter()*1000
-			logging.info(f"Basic annealing took: {end-start}ms")
-			logging.info(f"Annealing solution has energy: {self.annealer.best.energy}")
-		elif mode == 'nn':
-			self.nnSolutions = {}
-			start = time.perf_counter()
-			self.nnSolution = None
-			verticesToSolve = []
-			for i in range(50):
-				vertex = random.choice(self.vertices)
-				while vertex in verticesToSolve:
-					vertex = random.choice(self.vertices)
-				verticesToSolve.append(vertex)
-
-
-			for vertex in verticesToSolve:
-				#logging.info(f"Determining Solution for Vertex {vertex.id}")
-				energy = 0
-				trailHistory = []
-				unvisited = [i for i in range(len(self.vertices))]
-				vertexHistory = [vertex]
-				unvisited.remove( vertexHistory[-1].id )
-				vertexHistory.append(vertexHistory[-1].partner)
-				unvisited.remove( vertexHistory[-1].id )
-				while len(unvisited) != 0:
-					currentVertex = vertexHistory[-1]
-					bestTrail = currentVertex.trails[unvisited[0]]
-					for trailID in unvisited:
-						trail = currentVertex.trails[trailID]
-						if trail.length < bestTrail.length:
-							bestTrail = trail
-					trailHistory.append(bestTrail)
-					energy = energy + bestTrail.length
-					nextVertex = bestTrail.vertices[0] if currentVertex == bestTrail.vertices[1] else bestTrail.vertices[1]
-					vertexHistory.append(nextVertex)
-					unvisited.remove(nextVertex.id)
-					nextVertex = nextVertex.partner
-					vertexHistory.append(nextVertex)
-					unvisited.remove(nextVertex.id)
-				self.nnSolutions[vertexHistory[0].id] = {
-					'vertexHistory' : vertexHistory,
-					'trailHistory' : trailHistory,
-					'energy' : energy
-				}
-				if self.nnSolution == None:
-					self.nnSolution = self.nnSolutions[vertexHistory[0].id]
-				else:
-					if self.nnSolutions[vertexHistory[0].id]['energy'] < self.nnSolution['energy']:
-						self.nnSolution = self.nnSolutions[vertexHistory[0].id]
-						logging.info(f"Vertex {vertex.id} is a new best vertex for nn, yielding energy: {self.nnSolution['energy']}")
-
-
-			end = time.perf_counter()
-			self.nnSolution['time'] = end-start
-			logging.info(f'Neareset Neighbor Solution took {end-start}s')
-			return self.nnSolution['energy']
 		
 
 
@@ -119,10 +57,12 @@ if __name__ == '__main__':
 	logging.basicConfig(level=logging.INFO)
 	# tau0 = 1/(nSegments * nearestNeighbor energy approximation)
 	network = Network(nSegments=100)
-	# network.solve(mode='anneal')
+	greedy = Greedy(network)
+	annealer = Annealer(network, maxAttempts=2000000,maxIterations=4000000, initialTemp=10,seedSegments=greedy.segments)
+	# annealer.solve()
+	exit()
 	acs = AntColonySystem(network=network, nAnts=20, tau0=1, alpha=1, beta=10, phi=0.01, ro=0.01, maxIterations= 500)
 	acs.solve()
-	print(network.solve(mode='nn'))
 	print(f"e_acs / e_nn = {acs.bestAnt.energy/network.nnSolution['energy']}")
 	print(f"t_acs / t_nn = {acs.solutionTime/network.nnSolution['time']}")
 	exit()

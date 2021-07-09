@@ -1,9 +1,9 @@
 import time
 import logging
 import random
+from math import sqrt, exp
 
 from tour import Tour
-from math import sqrt, exp
 
 class Annealer:
 	# todo: try using nn output as seed for anneal
@@ -53,12 +53,19 @@ class Annealer:
 			self.attempts = 0
 			logging.info(f"Decreasing temperature to {self.temperature}")
 	
-	def anneal(self):
-		while self.attempts < self.maxAttempts and self.iterations < self.maxIterations:
-			start = time.perf_counter()*1000
+	def solve(self):
+		start = time.perf_counter()*1000
+		while True:
+			if self.attempts > self.maxAttempts:
+				logging.info(f"Reached {self.attempts} consecutive attempts without improving; exiting annealer.")
+				break
+			if self.iterations > self.maxIterations:
+				logging.info(f"Reached {self.iterations} iterations; exiting annealer.")
+				break
 			self.createCandidate()
 			self.testCandidate()
 			self.runTemperatureScheduler()
 			self.iterations = self.iterations + 1
-			end = time.perf_counter()*1000
-			logging.debug(f"1 annealing iteration took {end-start}ms")
+		end = time.perf_counter()*1000
+		logging.info(f"Basic annealing took: {end-start}ms")
+		logging.info(f"Annealing solution has energy: {self.best.energy}")
