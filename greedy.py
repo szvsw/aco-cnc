@@ -1,10 +1,11 @@
+from os import close
 import time
 import logging
 import random
 from math import sqrt
 
 class Greedy:
-	def __init__(self,network):
+	def __init__(self,network,closedToOrigin=False):
 		#todo : use better termination algorithm rather than sampling a few random vertices
 		start = time.perf_counter()
 		self.network = network
@@ -42,6 +43,8 @@ class Greedy:
 				nextVertex = nextVertex.partner
 				vertexHistory.append(nextVertex)
 				unvisited.remove(nextVertex.id)
+			if closedToOrigin:
+				energy = energy + self.network.origin.trails[vertexHistory[0].id].length + self.network.origin.trails[vertexHistory[-1].id].length
 			self.nnSolutions[vertexHistory[0].id] = {
 				'vertexHistory' : vertexHistory,
 				'trailHistory' : trailHistory,

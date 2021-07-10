@@ -7,6 +7,7 @@ from greedy import Greedy
 from annealer import Annealer
 from antcolonysystem import AntColonySystem
 from linesegment import LineSegment
+from vertex import Vertex
 from trail import Trail
 
 
@@ -16,6 +17,9 @@ class Network:
 	def __init__(self,nSegments):
 		logging.info(f"Setting up network with {nSegments} pairs of connected points.")
 		start = time.perf_counter()*1000
+
+		self.origin = Vertex(0,0)
+		self.originSegment = LineSegment(self.origin,self.origin)
 
 		self.segments = [LineSegment() for i in range(nSegments)]
 		self.vertices = []
@@ -39,11 +43,21 @@ class Network:
 				vtx2.sortedTrails.append(trail)
 				self.trails.append(trail)
 		
+		
 		for vtx in self.vertices:
 			vtx.sortTrails()
-		
+
 		for i in range(len(self.trails)):
 			self.trails[i].id = i
+		
+		# Create trail from origin to each vertex
+		for vtx in self.vertices:
+			trail = Trail(self.origin,vtx,network=self)
+			self.origin.trails[vtx.id] = trail
+			self.origin.sortedTrails.append(trail)
+
+		self.origin.sortTrails()
+		
 		
 
 		end = time.perf_counter()*1000
@@ -57,7 +71,8 @@ if __name__ == '__main__':
 	logging.basicConfig(level=logging.INFO)
 	# tau0 = 1/(nSegments * nearestNeighbor energy approximation)
 	network = Network(nSegments=100)
-	greedy = Greedy(network)
+	greedy = Greedy(network,closedToOrigin=True)
+	greedy = Greedy(network,closedToOrigin=False)
 	annealer = Annealer(network, maxAttempts=2000000,maxIterations=4000000, initialTemp=10,seedSegments=greedy.segments)
 	# annealer.solve()
 	exit()
