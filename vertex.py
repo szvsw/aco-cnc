@@ -1,8 +1,8 @@
 import random
 class Vertex:
-	def __init__(self):
+	def __init__(self,x=None,y=None):
 		# self.loc =  [ random.random()*50,random.random()*50 ] # This line, paired with the commented out section in linesegment, helps vaguely replicate real world dataset
-		self.loc =  [ random.random()*1000,random.random()*1000 ] 
+		self.loc =  [ x if x != None else random.random()*1000, y if y != None else random.random()*1000 ] 
 		self.partner = None
 		self.parentSegment = None
 		self.id = None
