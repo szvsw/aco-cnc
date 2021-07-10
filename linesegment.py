@@ -1,8 +1,8 @@
 from vertex import Vertex
 
 class LineSegment:
-	def __init__(self):
-		self.vertices = [Vertex(), Vertex()]
+	def __init__(self,a=None,b=None):
+		self.vertices = [Vertex() if a == None else a, Vertex() if b == None else b]
 		# translation = (random.random()*950,random.random()*950)
 		# for vertex in self.vertices:
 		# 	for i in range(2):
